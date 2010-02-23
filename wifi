@@ -1,0 +1,14 @@
+#!/bin/sh
+
+OSD="aosd_cat -p 4 -t 2 -n 44 -w 0 -R white -b 5 -s 100 -r 150 -f 100 -u 1000 -o 200"
+echo "wifi toggle" | `$OSD`
+/etc/init.d/wicd stop
+modprobe -r iwlagn
+sleep 0.4
+modprobe iwlagn
+/etc/init.d/wicd start
+echo "wifi toggle on" | `$OSD`
+
+
+
+

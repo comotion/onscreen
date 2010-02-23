@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+#
+# read from pipe and cat to osd.
+# 2009-11-01
+$SIG{CHLD} = "IGNORE";
+my $osd = "/usr/bin/aosd_cat";
+my $args = "-p 4 -t 2 -n 44 -w 0 -R white -b 5 -s 100 -r 150 -f 50 -u 1500 -o 50 -l 3 -a 2";
+
+my $FIFO = '/tmp/osd.pipe';
+unlink $FIFO; # so what?
+if ( not -p $FIFO ){
+   print "[*] making fifo\n";
+   # not running yet. racy start!
+   unlink $FIFO;
+   `mkfifo $FIFO`;# or die "couldn't make pipe $FIFO";
+   #my $pid = fork();
+   my $pid = 0;
+   if($pid < 0){
+      die "Failed to fork! $!";
+   }elsif(not $pid){
+      # child will fork off osd daemon
+      # lame way to do this
+      my $in;
+      print STDERR "[*] start osd!";
+      open FIFO, "< $FIFO" or die "something failed: $!";
+      select FIFO and $| = 1;
+      open OSD, "| $osd $args" or die "failed:$!";
+      select OSD and $| = 1;
+      #print OSD ":started:\n";
+      while(1){
+         while(<FIFO>){
+         #$in = <FIFO>;
+         chomp;
+         $in .= $_;
+         #chomp $in;
+         }
+         #print "$in\n";
+         #`echo "$in" | $osd`;
+       #  `{ while true; do cat $FIFO; done } | $osd`;
+       #open OSD, "< $FIFO";
+        # print "[!] EXITING\n";
+         #close FIFO;
+         print OSD "$in\n" or die "failed $!";
+         $in = '';
+         close FIFO and
+         open FIFO, "< $FIFO" or die "something else failed: $!" if eof FIFO;
+      }
+   }
+   exit
+}
+open (FIFO, "< $FIFO") or die "Couldn't read fifo $FIFO";
+
+while (<STDIN>){
+   `echo $_ | $osd`;
+}
