@@ -1,0 +1,7 @@
+osd - simple script that takes pipe output and prints it via aosd_cat to screen
+volume - adjust the volume and put it onscreen
+wifi - reset wifi status and put it onscreen
+battery - twiddle battery charge/discharge and put it onscreen
+dualscreen - twiddle display properties and put it onscreen
+
+(c) 2009-2010 Kacper Wysocki kacperw@gmail.com

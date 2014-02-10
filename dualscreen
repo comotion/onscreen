@@ -1,10 +1,20 @@
 #!/bin/bash
 
-OSD="aosd_cat -p 4 -t 2 -n 44 -w 0 -R white -b 5 -s 100 -r 150 -f 100 -u 1000 -o 200"
-echo "simsalabim..!" | `$OSD`
+#OSD="aosd_cat -p 4 -t 2 -n 44 -w 0 -R white -b 5 -s 100 -r 150 -f 100 -u 1000 -o 200"
+#echo "simsalabim..!" | `$OSD` &
+notify-send "xrandr" "simsalabim\nautoconfiguring screens" -i /usr/share/icons/oxygen/48x48/devices/video-display.png
 # do some magic
+#xrandr -s 1600x1200
+#xrandr --auto
+#xrandr -s 1680x1050
+#xrandr -s 1440x900
+xrandr -s 1440x900 
+xrandr -s 1600x1200
 xrandr --auto
 
-echo "autoconfiguring screens" | `$OSD`
+#echo "autoconfiguring screens" | `$OSD`
 # turn on dual screen and put VGA to the left of builtin
-xrandr --output VGA --left-of LVDS
+#xrandr --output VGA --left-of LVDS
+xrandr --output VGA1 --left-of LVDS1
+#xrandr --output VGA1 --right-of LVDS1
+openbox --reconfigure

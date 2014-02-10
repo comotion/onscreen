@@ -3,7 +3,13 @@ use strict;
 
 my $quiet = 0;
 #my $osd = "aosd_cat -p 4 -t 2 -n 44 -w 0 -R white -b 5 -s 100 -r 150 -f 100 -u 500 -o 100";
-my $osd = 'cat > /tmp/osd.pipe';
+#my $osd = 'cat > /tmp/osd.pipe';
+my $icondir = '/usr/share/icons/oxygen/48x48/status';
+my $osd = qq(xargs sh -c 'notify-send "Volume" "\$@" --expire-time 1);
+my $osd_up = $osd . " -i $icondir/audio-volume-high.png'";
+my $osd_dn = $osd . " -i $icondir/audio-volume-low.png'";
+my $osd_mu = $osd . " -i $icondir/audio-volume-muted.png'";
+
 my $vol_pcm = `amixer sget PCM`;
 #print "$vol_pcm";
 $vol_pcm =~ /Front Right: Playback (\d+)/;
@@ -11,29 +17,34 @@ $vol_pcm = $1;
 
 my $vol_mix = `amixer sget Master`;
 #print "$vol_mix";
-$vol_mix =~ /Front Left: Playback (\d+)/;
+$vol_mix =~ /Mono: Playback (\d+)/;
 $vol_mix = $1;
 my $vol;
 
 my $arg;
+my $cmd = $osd."'";
 while(@ARGV){
    $arg = shift @ARGV;
    if($arg eq '0'){
       $vol_mix = 0;
-      `echo supercalifragilisticexpialadocious | $osd`;
+      #`echo supercalifragilisticexpialadocious | $osd`;
+      $cmd = $osd_mu;
 
    # unneccesary parsing, amixer supports increments.
    }elsif($arg =~ /-(\d+)/){
       $vol_mix -= $1;
+      $cmd = $osd_dn;
    }elsif($arg =~ /\+?(\d+)/){
       $vol_pcm += $1;
       $vol_mix += $1;
+      $cmd = $osd_up;
    }
-   if($vol_pcm < 0){ $vol_pcm = 0 };
-   if($vol_mix < 0){ $vol_mix = 0 };
+   if($vol_pcm < 0){ $vol_pcm = 0; $cmd = $osd_mu; };
+   if($vol_mix < 0){ $vol_mix = 0; $cmd = $osd_mu; };
    `amixer sset Master $vol_mix`;
    `amixer sset PCM $vol_pcm`;
    $vol = ($vol_pcm < $vol_mix)?$vol_pcm:$vol_mix;
-   `echo volume $vol | $osd`;
+   print "volume $vol | $cmd\n";
+   `echo volume $vol | $cmd`;
 }
 print "Mix: $vol_mix, PCM: $vol_pcm\n" if not $quiet;
